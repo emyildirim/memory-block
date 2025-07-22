@@ -13,13 +13,14 @@ const Login = () => {
     password: ''
   });
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   
   const { login } = useAuth();
   const navigate = useNavigate();
 
   // Try different background pattern filenames from public folder
   const getBackgroundPattern = () => {
-    return '/background-pattern.jpg'; // Place your pattern in public/ folder
+    return '/background-pattern.png'; // Place your pattern in public/ folder
   };
 
   const handleChange = (e) => {
@@ -29,27 +30,50 @@ const Login = () => {
     }));
   };
 
+  const showAlert = (title, text, icon) => {
+    return Swal.fire({
+      title,
+      text,
+      icon,
+      confirmButtonColor: '#3085d6',
+      allowOutsideClick: false
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMessage(''); // Clear previous errors
     
     if (!formData.username || !formData.password) {
-      Swal.fire('Error', 'Please fill in all fields', 'error');
+      setErrorMessage('Please fill in all fields');
+      showAlert('Error', 'Please fill in all fields', 'error');
       return;
     }
 
     setLoading(true);
     
     try {
+      console.log('Attempting login with:', { username: formData.username, password: '***' });
       const response = await authAPI.login(formData);
+      console.log('Login response:', response);
+      
       const { token, user } = response.data;
       
       login(user, token);
       
-      Swal.fire('Success', 'Logged in successfully!', 'success');
-      navigate('/dashboard');
+      showAlert('Success', 'Logged in successfully!', 'success')
+        .then(() => {
+          navigate('/dashboard');
+        });
     } catch (error) {
-      const message = error.response?.data?.message || 'Login failed';
-      Swal.fire('Error', message, 'error');
+      console.error('Login error:', error);
+      
+      // Get specific error message from response or use default
+      const message = error.response?.data?.message || 'Invalid username or password';
+      setErrorMessage(message);
+      
+      console.log('Showing SweetAlert with message:', message);
+      showAlert('Login Failed', message, 'error');
     } finally {
       setLoading(false);
     }
@@ -66,63 +90,48 @@ const Login = () => {
       }}
     >
       {/* Overlay for better readability */}
-      <div className="absolute inset-0 bg-white bg-opacity-90"></div>
+      {/* Overlay for better readability - adjust opacity value (0-100) to change background transparency */}
+      <div className="absolute inset-0 bg-white bg-opacity-75"></div>
       
       <div className="relative z-10 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center mb-6">
-          <div className="flex items-center space-x-3">
-            <Logo theme="light" className="w-10 h-10" />
-            <div className="flex flex-col">
-              <h1 
-                className="text-2xl font-bold text-gray-900 leading-tight"
-                style={{
-                  textShadow: '2px 2px 4px rgba(255, 255, 255, 0.8), -1px -1px 2px rgba(255, 255, 255, 0.8), 1px -1px 2px rgba(255, 255, 255, 0.8), -1px 1px 2px rgba(255, 255, 255, 0.8)'
-                }}
-              >
-                Memory Blocks
-              </h1>
-              <span 
-                className="text-sm text-gray-600"
-                style={{
-                  textShadow: '1px 1px 2px rgba(255, 255, 255, 0.8), -1px -1px 1px rgba(255, 255, 255, 0.8)'
-                }}
-              >
-                Your Personal Knowledge Base
-              </span>
+        <div className="bg-white py-8 px-4 shadow-lg rounded-lg sm:px-10">
+          {/* Logo and title */}
+          <div className="flex justify-center mb-6">
+            <div className="flex items-center space-x-3">
+              <Logo theme="light" className="w-14 h-14 md:w-16 md:h-16" />
+              <div className="flex flex-col">
+                <h1 className="text-3xl font-bold text-gray-900 leading-tight">
+                  Memory Blocks
+                </h1>
+                <span className="text-base text-gray-600">
+                  Your Personal Knowledge Base
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="mb-4">
-          <h2 
-            className="text-center text-lg font-semibold text-gray-900"
-            style={{
-              textShadow: '2px 2px 4px rgba(255, 255, 255, 0.8), -1px -1px 2px rgba(255, 255, 255, 0.8), 1px -1px 2px rgba(255, 255, 255, 0.8), -1px 1px 2px rgba(255, 255, 255, 0.8)'
-            }}
-          >
-            Sign in to your account
-          </h2>
-          <p 
-            className="mt-2 text-center text-sm text-gray-600"
-            style={{
-              textShadow: '1px 1px 2px rgba(255, 255, 255, 0.8), -1px -1px 1px rgba(255, 255, 255, 0.8)'
-            }}
-          >
-            Or{' '}
-            <Link
-              to="/register"
-              className="font-medium text-blue-600 hover:text-blue-500"
-              style={{
-                textShadow: '1px 1px 2px rgba(255, 255, 255, 0.8), -1px -1px 1px rgba(255, 255, 255, 0.8)'
-              }}
-            >
-              create a new account
-            </Link>
-          </p>
-        </div>
-      </div>
+          
+          {/* Sign in heading */}
+          <div className="mb-6 border-b pb-4">
+            <h2 className="text-center text-lg font-semibold text-gray-900">
+              Sign in to your account
+            </h2>
+            <p className="mt-2 text-center text-sm text-gray-600">
+              Or{' '}
+              <Link
+                to="/register"
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
+                create a new account
+              </Link>
+            </p>
+          </div>
 
-      <div className="relative z-10 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-lg rounded-lg sm:px-10">
+          {errorMessage && (
+            <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded">
+              {errorMessage}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
@@ -136,7 +145,7 @@ const Login = () => {
                   required
                   value={formData.username}
                   onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="Enter your username"
                 />
               </div>
@@ -154,7 +163,7 @@ const Login = () => {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="Enter your password"
                 />
               </div>
@@ -164,7 +173,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               >
                 {loading ? 'Signing in...' : 'Sign in'}
               </button>
