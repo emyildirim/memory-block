@@ -124,8 +124,8 @@ const Settings = () => {
       <header className="shadow layout-transition" style={{ backgroundColor: 'var(--bg-primary)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4 md:py-6">
-            <div className="flex items-center space-x-3">
-              <Logo theme={theme} />
+            <Link to="/dashboard" className="flex items-center space-x-3 hover:opacity-90 transition-opacity">
+              <Logo theme={theme} className="w-10 h-10 md:w-12 md:h-12" />
               <div className="flex flex-col">
                 <h1 className="text-xl md:text-2xl font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>
                   Settings
@@ -134,7 +134,7 @@ const Settings = () => {
                   Manage Your Memory Blocks
                 </span>
               </div>
-            </div>
+            </Link>
             <div className="flex items-center space-x-2 md:space-x-4">
               {/* Theme toggle */}
               <button
