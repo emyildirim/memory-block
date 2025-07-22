@@ -124,6 +124,50 @@ The application will be available at:
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:5001
 
+## 🚀 Deployment
+
+### Deploying to Vercel
+
+#### Backend Deployment
+
+1. **Create a MongoDB Atlas database** if you don't already have one
+
+2. **Deploy the server to Vercel**:
+   - Import your GitHub repository to Vercel
+   - Set the root directory to `server`
+   - Set the build command to `npm install`
+   - Set the output directory to `.`
+   - Set the development command to `npm run dev`
+   - Add the following environment variables:
+     - `NODE_ENV`: `production`
+     - `MONGODB_URI`: Your MongoDB Atlas connection string
+     - `JWT_SECRET`: A strong secret key
+     - `JWT_EXPIRE`: `7d`
+     - `CORS_ORIGIN`: Your frontend URL (e.g., `https://your-frontend.vercel.app`)
+
+3. **Deploy**
+
+#### Frontend Deployment
+
+1. **Deploy the client to Vercel**:
+   - Import your GitHub repository to Vercel
+   - Set the root directory to `client`
+   - Set the build command to `npm run build`
+   - Set the output directory to `dist`
+   - Set the development command to `npm run dev`
+   - Add the following environment variables:
+     - `VITE_API_URL`: Your backend API URL (e.g., `https://your-backend.vercel.app/api`)
+
+2. **Deploy**
+
+3. **Update CORS settings** in your backend to allow requests from your frontend domain
+
+### Alternative Deployment Methods
+
+- **Backend**: Railway, Render, Heroku
+- **Frontend**: Netlify, GitHub Pages, Firebase Hosting
+- **Database**: MongoDB Atlas, AWS DocumentDB
+
 ## 📚 API Endpoints
 
 ### Authentication
@@ -190,18 +234,6 @@ Export your memories to CSV format from the Settings page. The CSV includes:
 - Responsive memory cards
 - Mobile-friendly forms and modals
 
-## 🚀 Deployment
-
-### Backend Deployment (Render/Railway/Vercel Functions)
-1. Set environment variables in your hosting platform
-2. Deploy the `server` directory
-3. Update the MongoDB URI to your production database
-
-### Frontend Deployment (Vercel/Netlify)
-1. Build the client: `cd client && npm run build`
-2. Deploy the `client/dist` directory
-3. Update API base URL in production
-
 ## 📖 Usage
 
 1. **Register/Login**: Create an account or sign in
@@ -240,5 +272,10 @@ Export your memories to CSV format from the Settings page. The CSV includes:
    - Frontend runs on port 3000
    - Backend runs on port 5001
    - Change ports in configuration if needed
+
+4. **Vercel Deployment Issues**
+   - Make sure `build` script exists in package.json
+   - Set correct environment variables
+   - Check CORS configuration
 
 For more help, please open an issue in the repository.
