@@ -3,12 +3,15 @@ import axios from 'axios';
 // API base URL - will use environment variable in production if available
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
+console.log('API Base URL:', API_BASE_URL); // Debug the API URL
+
 // Create axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: false, // Set to true if using cookies for auth
 });
 
 // Request interceptor to add auth token
@@ -18,9 +21,11 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    console.log(`Request to: ${config.url}`); // Debug request URL
     return config;
   },
   (error) => {
+    console.error('Request error:', error);
     return Promise.reject(error);
   }
 );
@@ -29,6 +34,16 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.error('Response error:', error);
+    
+    // Log more details about the error
+    if (error.response) {
+      console.log('Error status:', error.response.status);
+      console.log('Error data:', error.response.data);
+    } else if (error.request) {
+      console.log('No response received:', error.request);
+    }
+    
     // Don't redirect on 401 for login/register endpoints
     if (error.response?.status === 401 && 
         !error.config.url.includes('/auth/login') && 

@@ -14,16 +14,41 @@ const PORT = process.env.PORT || 5001;
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: process.env.CORS_ORIGIN || 'https://www.memoryblock.org',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 200
 };
 
+// Log CORS settings on startup
+console.log('CORS settings:', {
+  origin: process.env.CORS_ORIGIN || 'https://www.memoryblock.org',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+});
+
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
+}));
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Add CORS headers manually as backup
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || 'https://www.memoryblock.org');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Credentials', true);
+  
+  // Handle OPTIONS method
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  next();
+});
 
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/memory-blocks', {
@@ -43,7 +68,10 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     message: 'Memory Blocks API is running', 
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    cors: {
+      origin: process.env.CORS_ORIGIN || 'https://server-memory-block.vercel.app/api'
+    }
   });
 });
 
@@ -71,6 +99,7 @@ if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`CORS origin: ${process.env.CORS_ORIGIN || 'https://www.memoryblock.org'}`);
   });
 }
 
