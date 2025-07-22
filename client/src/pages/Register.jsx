@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../services/api';
+import Logo from '../components/Logo';
 import Swal from 'sweetalert2';
+// Background pattern - place your pattern image in public/ folder
+// Will try common filenames: background-pattern.jpg, background-pattern.png, pattern.png
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +17,11 @@ const Register = () => {
   
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // Try different background pattern filenames from public folder
+  const getBackgroundPattern = () => {
+    return '/background-pattern.jpg'; // Place your pattern in public/ folder
+  };
 
   const handleChange = (e) => {
     setFormData(prev => ({
@@ -63,24 +71,73 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Create your account
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Or{' '}
-          <Link
-            to="/login"
-            className="font-medium text-blue-600 hover:text-blue-500"
+    <div 
+      className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative"
+      style={{
+        backgroundImage: `url(${getBackgroundPattern()})`,
+        backgroundRepeat: 'repeat',
+        backgroundSize: 'auto',
+        backgroundColor: '#f9fafb'
+      }}
+    >
+      {/* Overlay for better readability */}
+      <div className="absolute inset-0 bg-white bg-opacity-90"></div>
+      
+      <div className="relative z-10 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="flex justify-center mb-6">
+          <div className="flex items-center space-x-3">
+            <Logo theme="light" className="w-10 h-10" />
+            <div className="flex flex-col">
+              <h1 
+                className="text-2xl font-bold text-gray-900 leading-tight"
+                style={{
+                  textShadow: '2px 2px 4px rgba(255, 255, 255, 0.8), -1px -1px 2px rgba(255, 255, 255, 0.8), 1px -1px 2px rgba(255, 255, 255, 0.8), -1px 1px 2px rgba(255, 255, 255, 0.8)'
+                }}
+              >
+                Memory Blocks
+              </h1>
+              <span 
+                className="text-sm text-gray-600"
+                style={{
+                  textShadow: '1px 1px 2px rgba(255, 255, 255, 0.8), -1px -1px 1px rgba(255, 255, 255, 0.8)'
+                }}
+              >
+                Your Personal Knowledge Base
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="mb-4">
+          <h2 
+            className="text-center text-lg font-semibold text-gray-900"
+            style={{
+              textShadow: '2px 2px 4px rgba(255, 255, 255, 0.8), -1px -1px 2px rgba(255, 255, 255, 0.8), 1px -1px 2px rgba(255, 255, 255, 0.8), -1px 1px 2px rgba(255, 255, 255, 0.8)'
+            }}
           >
-            sign in to existing account
-          </Link>
-        </p>
+            Create your account
+          </h2>
+          <p 
+            className="mt-2 text-center text-sm text-gray-600"
+            style={{
+              textShadow: '1px 1px 2px rgba(255, 255, 255, 0.8), -1px -1px 1px rgba(255, 255, 255, 0.8)'
+            }}
+          >
+            Or{' '}
+            <Link
+              to="/login"
+              className="font-medium text-blue-600 hover:text-blue-500"
+              style={{
+                textShadow: '1px 1px 2px rgba(255, 255, 255, 0.8), -1px -1px 1px rgba(255, 255, 255, 0.8)'
+              }}
+            >
+              sign in to existing account
+            </Link>
+          </p>
+        </div>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+      <div className="relative z-10 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-4 shadow-lg rounded-lg sm:px-10">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">

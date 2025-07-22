@@ -1,5 +1,4 @@
 const Memory = require('../models/Memory');
-const { Parser } = require('json2csv');
 
 // Get all memories for user with optional search and filter
 const getMemories = async (req, res) => {
@@ -145,9 +144,27 @@ const exportMemories = async (req, res) => {
       createdAt: memory.createdAt.toISOString()
     }));
 
-    const fields = ['title', 'context', 'tag', 'detail', 'createdAt'];
-    const parser = new Parser({ fields });
-    const csv = parser.parse(csvData);
+    // Simple CSV conversion function
+    const convertToCSV = (data) => {
+      const headers = ['title', 'context', 'tag', 'detail', 'createdAt'];
+      const csvRows = [headers.join(',')];
+      
+      data.forEach(row => {
+        const values = headers.map(header => {
+          let value = row[header] || '';
+          // Escape quotes and wrap in quotes if contains comma or newline
+          if (value.includes(',') || value.includes('\n') || value.includes('"')) {
+            value = '"' + value.replace(/"/g, '""') + '"';
+          }
+          return value;
+        });
+        csvRows.push(values.join(','));
+      });
+      
+      return csvRows.join('\n');
+    };
+
+    const csv = convertToCSV(csvData);
 
     res.header('Content-Type', 'text/csv');
     res.attachment('memories.csv');

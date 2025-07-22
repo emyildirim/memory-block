@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { userAPI, memoryAPI } from '../services/api';
+import Logo from '../components/Logo';
 import Swal from 'sweetalert2';
 
 const Settings = () => {
@@ -9,7 +10,7 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [exportLoading, setExportLoading] = useState(false);
 
-  const { user, logout } = useAuth();
+  const { user, logout, theme, toggleTheme } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -111,25 +112,57 @@ const Settings = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-500">Loading settings...</div>
+      <div className="min-h-screen flex items-center justify-center layout-transition" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+        <div style={{ color: 'var(--text-secondary)' }}>Loading settings...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen layout-transition" style={{ backgroundColor: 'var(--bg-secondary)' }}>
       {/* Header */}
-      <header className="bg-white shadow">
+      <header className="shadow layout-transition" style={{ backgroundColor: 'var(--bg-primary)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-            <div className="flex items-center space-x-4">
+          <div className="flex justify-between items-center py-4 md:py-6">
+            <div className="flex items-center space-x-3">
+              <Logo theme={theme} />
+              <div className="flex flex-col">
+                <h1 className="text-xl md:text-2xl font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>
+                  Settings
+                </h1>
+                <span className="text-xs md:text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  Manage Your Memory Blocks
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2 md:space-x-4">
+              {/* Theme toggle */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg transition-colors"
+                style={{ color: 'var(--text-secondary)' }}
+                title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              >
+                {theme === 'light' ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                )}
+              </button>
+              
               <Link
                 to="/dashboard"
-                className="text-blue-600 hover:text-blue-800 transition-colors"
+                className="transition-colors"
+                style={{ color: 'var(--accent-color)' }}
+                title="Back to Dashboard"
               >
-                Back to Dashboard
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
               </Link>
             </div>
           </div>
@@ -137,25 +170,25 @@ const Settings = () => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-8">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+        <div className="space-y-6 md:space-y-8">
           {/* User Profile Section */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Profile Information</h2>
+          <div className="memory-card rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Profile Information</h2>
             <div className="space-y-4">
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-gray-600">Username</span>
-                <span className="font-medium">{userProfile?.user?.username}</span>
+              <div className="flex justify-between items-center py-2" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Username</span>
+                <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{userProfile?.user?.username}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-gray-600">Account Created</span>
-                <span className="font-medium">
+              <div className="flex justify-between items-center py-2" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Account Created</span>
+                <span className="font-medium" style={{ color: 'var(--text-primary)' }}>
                   {userProfile?.user?.createdAt && formatDate(userProfile.user.createdAt)}
                 </span>
               </div>
               <div className="flex justify-between items-center py-2">
-                <span className="text-gray-600">Total Memories</span>
-                <span className="font-medium text-blue-600">
+                <span style={{ color: 'var(--text-secondary)' }}>Total Memories</span>
+                <span className="font-medium" style={{ color: 'var(--accent-color)' }}>
                   {userProfile?.memoryCount || 0}
                 </span>
               </div>
@@ -163,27 +196,27 @@ const Settings = () => {
           </div>
 
           {/* Data Management Section */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Data Management</h2>
+          <div className="memory-card rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Data Management</h2>
             <div className="space-y-4">
-              <div className="flex justify-between items-center py-4 border-b border-gray-200">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 space-y-3 sm:space-y-0" style={{ borderBottom: '1px solid var(--border-color)' }}>
                 <div>
-                  <h3 className="font-medium text-gray-900">Export Data</h3>
-                  <p className="text-sm text-gray-600">
+                  <h3 className="font-medium" style={{ color: 'var(--text-primary)' }}>Export Data</h3>
+                  <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                     Download all your memories as a CSV file
                   </p>
                 </div>
                 <button
                   onClick={handleExportCSV}
                   disabled={exportLoading || userProfile?.memoryCount === 0}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="btn-primary px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {exportLoading ? 'Exporting...' : 'Export CSV'}
                 </button>
               </div>
               
               {userProfile?.memoryCount === 0 && (
-                <p className="text-sm text-gray-500">
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                   No memories to export. Create some memories first!
                 </p>
               )}
@@ -191,13 +224,13 @@ const Settings = () => {
           </div>
 
           {/* Danger Zone */}
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
-            <h2 className="text-xl font-semibold text-red-700 mb-4">Danger Zone</h2>
+          <div className="memory-card rounded-lg shadow p-6 border-l-4 border-red-500">
+            <h2 className="text-xl font-semibold text-red-600 mb-4">Danger Zone</h2>
             <div className="space-y-4">
-              <div className="flex justify-between items-center py-4">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 space-y-3 sm:space-y-0">
                 <div>
-                  <h3 className="font-medium text-gray-900">Delete Account</h3>
-                  <p className="text-sm text-gray-600">
+                  <h3 className="font-medium" style={{ color: 'var(--text-primary)' }}>Delete Account</h3>
+                  <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                     Permanently delete your account and all associated data.
                     <br />
                     <strong className="text-red-600">This action cannot be undone!</strong>
@@ -205,7 +238,7 @@ const Settings = () => {
                 </div>
                 <button
                   onClick={handleDeleteAccount}
-                  className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
                 >
                   Delete Account
                 </button>
@@ -214,12 +247,12 @@ const Settings = () => {
           </div>
 
           {/* App Information */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">About Memory App</h2>
-            <div className="text-sm text-gray-600 space-y-2">
-              <p>Version 1.0.0</p>
-              <p>A simple and secure way to store and organize your memories.</p>
-              <p>Built with React, Node.js, Express, and MongoDB.</p>
+          <div className="memory-card rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>About Memory Blocks</h2>
+            <div className="text-sm space-y-2" style={{ color: 'var(--text-secondary)' }}>
+              <p>Version 1.2.0</p>
+              <p>A simple and secure way to store and organize your thoughts and memories.</p>
+              <p>© 2025 Memory Blocks. All rights reserved.</p>
             </div>
           </div>
         </div>

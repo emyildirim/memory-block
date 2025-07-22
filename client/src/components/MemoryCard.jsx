@@ -31,14 +31,17 @@ const MemoryCard = ({ memory, onEdit, onDelete }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow">
+    <div className="memory-card rounded-lg shadow-md p-6 layout-transition">
       <div className="flex justify-between items-start mb-3">
-        <h3 className="text-lg font-semibold text-gray-800 flex-1">{memory.title}</h3>
+        <h3 className="text-lg font-semibold flex-1" style={{ color: 'var(--text-primary)' }}>{memory.title}</h3>
         <div className="flex space-x-2 ml-4">
           <button
             onClick={() => onEdit(memory)}
-            className="text-blue-600 hover:text-blue-800 transition-colors"
+            className="transition-colors"
+            style={{ color: 'var(--accent-color)' }}
             title="Edit memory"
+            onMouseEnter={(e) => e.target.style.opacity = '0.8'}
+            onMouseLeave={(e) => e.target.style.opacity = '1'}
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
@@ -57,35 +60,51 @@ const MemoryCard = ({ memory, onEdit, onDelete }) => {
       </div>
 
       {memory.tag && (
-        <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mb-3">
+        <span 
+          className="inline-block text-xs px-3 py-1 rounded-full mb-3"
+          style={{ 
+            backgroundColor: 'var(--accent-color)', 
+            color: 'white',
+            opacity: '0.9'
+          }}
+        >
           {memory.tag}
         </span>
       )}
 
-      {memory.context && (
-        <p className="text-gray-600 mb-3 text-sm">{memory.context}</p>
-      )}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3">
+        <div className="flex-1">
+          {memory.context && (
+            <p className="text-sm mb-2 sm:mb-0" style={{ color: 'var(--text-secondary)' }}>{memory.context}</p>
+          )}
+        </div>
+        <div className="text-xs flex-shrink-0" style={{ color: 'var(--text-secondary)' }}>
+          {formatDate(memory.createdAt)}
+        </div>
+      </div>
 
       {memory.detail && (
         <div className="mb-3">
-          <p className={`text-gray-700 text-sm ${!isExpanded && memory.detail.length > 150 ? 'line-clamp-3' : ''}`}>
+          <p 
+            className={`text-sm ${!isExpanded && memory.detail.length > 150 ? 'line-clamp-3' : ''}`}
+            style={{ color: 'var(--text-primary)' }}
+          >
             {isExpanded ? memory.detail : memory.detail.slice(0, 150)}
             {!isExpanded && memory.detail.length > 150 && '...'}
           </p>
           {memory.detail.length > 150 && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-blue-600 hover:text-blue-800 text-sm mt-1"
+              className="text-sm mt-1 transition-colors"
+              style={{ color: 'var(--accent-color)' }}
+              onMouseEnter={(e) => e.target.style.opacity = '0.8'}
+              onMouseLeave={(e) => e.target.style.opacity = '1'}
             >
               {isExpanded ? 'Show less' : 'Show more'}
             </button>
           )}
         </div>
       )}
-
-      <div className="text-xs text-gray-400">
-        {formatDate(memory.createdAt)}
-      </div>
     </div>
   );
 };
