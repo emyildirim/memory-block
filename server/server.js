@@ -12,6 +12,16 @@ const userRoutes = require('./routes/userRoutes');
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+// Log environment variables (without sensitive data)
+console.log('Environment:', {
+  NODE_ENV: process.env.NODE_ENV,
+  PORT: process.env.PORT,
+  MONGODB_URI: process.env.MONGODB_URI ? '[SET]' : '[NOT SET]',
+  JWT_SECRET: process.env.JWT_SECRET ? '[SET]' : '[NOT SET]',
+  JWT_EXPIRE: process.env.JWT_EXPIRE,
+  CORS_ORIGIN: process.env.CORS_ORIGIN
+});
+
 // CORS configuration
 const corsOptions = {
   origin: process.env.CORS_ORIGIN || 'https://www.memoryblock.org',
@@ -35,6 +45,12 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
+  next();
+});
+
 // Add CORS headers manually as backup
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || 'https://www.memoryblock.org');
@@ -50,13 +66,29 @@ app.use((req, res, next) => {
   next();
 });
 
-// MongoDB connection
+// MongoDB connection with detailed logging
+console.log('Attempting MongoDB connection...');
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/memory-blocks', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('Connected to MongoDB'))
-.catch(err => console.error('MongoDB connection error:', err));
+.then(() => {
+  console.log('Connected to MongoDB successfully');
+  console.log('MongoDB connection state:', mongoose.connection.readyState);
+})
+.catch(err => {
+  console.error('MongoDB connection error details:', err.message);
+  console.error('MongoDB connection error stack:', err.stack);
+  
+  // Check for common MongoDB connection errors
+  if (err.name === 'MongoServerSelectionError') {
+    console.error('MongoDB server selection error - check your connection string and network');
+  }
+  
+  if (err.name === 'MongoNetworkError') {
+    console.error('MongoDB network error - check your network connection and MongoDB server');
+  }
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -71,6 +103,10 @@ app.get('/api/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development',
     cors: {
       origin: process.env.CORS_ORIGIN || 'https://www.memoryblock.org'
+    },
+    mongodb: {
+      connected: mongoose.connection.readyState === 1,
+      state: mongoose.connection.readyState
     }
   });
 });
@@ -85,13 +121,15 @@ app.get('/', (req, res) => {
 
 // 404 handler
 app.use('*', (req, res) => {
+  console.log(`404 - Not Found: ${req.originalUrl}`);
   res.status(404).json({ message: 'Endpoint not found' });
 });
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error('Server error:', err);
-  res.status(500).json({ message: 'Internal server error' });
+  console.error('Server error:', err.message);
+  console.error('Server error stack:', err.stack);
+  res.status(500).json({ message: 'Internal server error', error: err.message });
 });
 
 // Start server if not being imported
