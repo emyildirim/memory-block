@@ -70,7 +70,7 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
     cors: {
-      origin: process.env.CORS_ORIGIN || 'https://server-memory-block.vercel.app/api'
+      origin: process.env.CORS_ORIGIN || 'https://www.memoryblock.org'
     }
   });
 });
