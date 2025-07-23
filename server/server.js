@@ -66,12 +66,24 @@ app.use((req, res, next) => {
   next();
 });
 
-// MongoDB connection with detailed logging
+// MongoDB connection with detailed logging and timeout
 console.log('Attempting MongoDB connection...');
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/memory-blocks', {
+
+// Check if MongoDB URI is set
+if (!process.env.MONGODB_URI) {
+  console.error('MONGODB_URI environment variable is not set!');
+  console.error('Please set MONGODB_URI in your environment variables');
+}
+
+// Set connection options with timeout
+const mongooseOptions = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-})
+  serverSelectionTimeoutMS: 5000, // 5 seconds timeout
+  socketTimeoutMS: 45000, // 45 seconds timeout
+};
+
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/memory-blocks', mongooseOptions)
 .then(() => {
   console.log('Connected to MongoDB successfully');
   console.log('MongoDB connection state:', mongoose.connection.readyState);
@@ -83,11 +95,35 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/memory-bl
   // Check for common MongoDB connection errors
   if (err.name === 'MongoServerSelectionError') {
     console.error('MongoDB server selection error - check your connection string and network');
+    console.error('Make sure your IP is whitelisted in MongoDB Atlas Network Access');
   }
   
   if (err.name === 'MongoNetworkError') {
     console.error('MongoDB network error - check your network connection and MongoDB server');
   }
+
+  // Check for connection string format issues
+  if (err.message && err.message.includes('Invalid scheme')) {
+    console.error('Invalid MongoDB connection string format. Should start with mongodb:// or mongodb+srv://');
+  }
+
+  // Check for authentication issues
+  if (err.message && err.message.includes('Authentication failed')) {
+    console.error('MongoDB authentication failed - check username and password in connection string');
+  }
+});
+
+// Handle MongoDB connection events
+mongoose.connection.on('error', (err) => {
+  console.error('MongoDB connection error:', err.message);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('MongoDB disconnected');
+});
+
+mongoose.connection.on('reconnected', () => {
+  console.log('MongoDB reconnected');
 });
 
 // Routes
@@ -97,6 +133,9 @@ app.use('/api/user', userRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
+  const mongoState = mongoose.connection.readyState;
+  const mongoStateText = ['disconnected', 'connected', 'connecting', 'disconnecting'][mongoState] || 'unknown';
+  
   res.json({ 
     message: 'Memory Blocks API is running', 
     timestamp: new Date().toISOString(),
@@ -105,8 +144,10 @@ app.get('/api/health', (req, res) => {
       origin: process.env.CORS_ORIGIN || 'https://www.memoryblock.org'
     },
     mongodb: {
-      connected: mongoose.connection.readyState === 1,
-      state: mongoose.connection.readyState
+      connected: mongoState === 1,
+      state: mongoState,
+      stateText: mongoStateText,
+      uri: process.env.MONGODB_URI ? 'Set (hidden)' : 'Not set'
     }
   });
 });
