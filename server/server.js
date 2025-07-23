@@ -119,12 +119,12 @@ async function startServer() {
       res.status(500).json({ message: 'Internal server error', error: err.message });
     });
 
-    if (require.main === module) {
+    /*if (require.main === module) {
       app.listen(PORT, () => {
         console.log(`🚀 Server running on port ${PORT}`);
         console.log(`🌐 CORS origin: ${process.env.CORS_ORIGIN || 'https://www.memoryblock.org'}`);
       });
-    }
+    }*/
   } catch (err) {
     console.error('❌ MongoDB connection failed:', err.message);
     console.error(err.stack);
