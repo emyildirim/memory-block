@@ -5,6 +5,7 @@ import { memoryAPI } from '../services/api';
 import MemoryCard from '../components/MemoryCard';
 import FilterModal from '../components/FilterModal';
 import CompactSearchBar from '../components/CompactSearchBar';
+import MemoryDetailModal from '../components/MemoryDetailModal';
 import Logo from '../components/Logo';
 import Swal from 'sweetalert2';
 
@@ -15,7 +16,9 @@ const Dashboard = () => {
   const [searchFilter, setSearchFilter] = useState('all');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [editingMemory, setEditingMemory] = useState(null);
+  const [selectedMemory, setSelectedMemory] = useState(null);
   const [memoryForm, setMemoryForm] = useState({
     title: '',
     context: '',
@@ -111,6 +114,11 @@ const Dashboard = () => {
       const message = error.response?.data?.message || 'Failed to delete memory';
       Swal.fire('Error', message, 'error');
     }
+  };
+
+  const handleViewMemoryDetails = (memory) => {
+    setSelectedMemory(memory);
+    setIsDetailModalOpen(true);
   };
 
   const handleLogout = () => {
@@ -279,6 +287,7 @@ const Dashboard = () => {
                 memory={memory}
                 onEdit={handleEditMemory}
                 onDelete={handleDeleteMemory}
+                onViewDetails={handleViewMemoryDetails}
               />
             ))}
           </div>
@@ -292,6 +301,18 @@ const Dashboard = () => {
         onSearch={handleSearch}
         currentQuery={searchQuery}
         currentFilter={searchFilter}
+      />
+
+      {/* Memory Detail Modal */}
+      <MemoryDetailModal
+        memory={selectedMemory}
+        isOpen={isDetailModalOpen}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setSelectedMemory(null);
+        }}
+        onEdit={handleEditMemory}
+        onDelete={handleDeleteMemory}
       />
 
       {/* Create/Edit Memory Modal */}

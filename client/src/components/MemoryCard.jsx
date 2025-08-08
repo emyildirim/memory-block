@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Swal from 'sweetalert2';
 
-const MemoryCard = ({ memory, onEdit, onDelete }) => {
+const MemoryCard = ({ memory, onEdit, onDelete, onViewDetails }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const handleDelete = async () => {
@@ -31,12 +31,18 @@ const MemoryCard = ({ memory, onEdit, onDelete }) => {
   };
 
   return (
-    <div className="memory-card rounded-lg shadow-md p-6 layout-transition">
+    <div 
+      className="memory-card rounded-lg shadow-md p-6 layout-transition cursor-pointer hover:shadow-lg transition-shadow"
+      onClick={() => onViewDetails && onViewDetails(memory)}
+    >
       <div className="flex justify-between items-start mb-3">
         <h3 className="text-lg font-semibold flex-1" style={{ color: 'var(--text-primary)' }}>{memory.title}</h3>
         <div className="flex space-x-2 ml-4">
           <button
-            onClick={() => onEdit(memory)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(memory);
+            }}
             className="transition-colors"
             style={{ color: 'var(--accent-color)' }}
             title="Edit memory"
@@ -48,7 +54,10 @@ const MemoryCard = ({ memory, onEdit, onDelete }) => {
             </svg>
           </button>
           <button
-            onClick={handleDelete}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete();
+            }}
             className="text-red-600 hover:text-red-800 transition-colors"
             title="Delete memory"
           >
@@ -94,7 +103,14 @@ const MemoryCard = ({ memory, onEdit, onDelete }) => {
           </p>
           {memory.detail.length > 150 && (
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isExpanded) {
+                  setIsExpanded(false);
+                } else {
+                  onViewDetails && onViewDetails(memory);
+                }
+              }}
               className="text-sm mt-1 transition-colors"
               style={{ color: 'var(--accent-color)' }}
               onMouseEnter={(e) => e.target.style.opacity = '0.8'}

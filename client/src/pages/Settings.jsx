@@ -250,7 +250,7 @@ const Settings = () => {
           <div className="memory-card rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>About Memory Blocks</h2>
             <div className="text-sm space-y-2" style={{ color: 'var(--text-secondary)' }}>
-              <p>Version 1.2.0</p>
+              <p>Version 1.2.5</p>
               <p>A simple and secure way to store and organize your thoughts and memories.</p>
               <p>© 2025 Memory Blocks. All rights reserved.</p>
             </div>
