@@ -76,8 +76,14 @@ if (!process.env.MONGODB_URI) {
   mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000
+    serverSelectionTimeoutMS: 30000, // Increased from 5000ms
+    socketTimeoutMS: 45000,
+    connectTimeoutMS: 60000,
+    bufferMaxEntries: 0, // Disable mongoose buffering
+    bufferCommands: false, // Disable mongoose buffering
+    maxPoolSize: 10, // Maintain up to 10 socket connections
+    retryWrites: true,
+    w: 'majority'
   })
   .then(() => console.log('✅ MongoDB connected'))
   .catch(err => {
@@ -99,9 +105,20 @@ app.use('/memories', memoryRoutes);
 app.use('/user', userRoutes);
 
 // Health check
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
   const mongoState = mongoose.connection.readyState;
   const mongoStateText = ['disconnected', 'connected', 'connecting', 'disconnecting'][mongoState] || 'unknown';
+
+  let dbTest = null;
+  try {
+    if (mongoState === 1) {
+      // Test actual database operation
+      await mongoose.connection.db.admin().ping();
+      dbTest = 'Database ping successful';
+    }
+  } catch (error) {
+    dbTest = `Database ping failed: ${error.message}`;
+  }
 
   res.json({
     message: 'Memory Blocks API is running',
@@ -114,7 +131,8 @@ app.get('/api/health', (req, res) => {
       connected: mongoState === 1,
       state: mongoState,
       stateText: mongoStateText,
-      uri: process.env.MONGODB_URI ? 'Set (hidden)' : 'Not set'
+      uri: process.env.MONGODB_URI ? 'Set (hidden)' : 'Not set',
+      test: dbTest
     }
   });
 });

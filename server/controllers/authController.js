@@ -33,7 +33,18 @@ const register = async (req, res) => {
 
     // Check if user already exists
     console.log('Checking if user exists:', username);
-    const existingUser = await User.findOne({ username });
+    console.log('MongoDB connection state:', mongoose.connection.readyState);
+    
+    // Check MongoDB connection before proceeding
+    if (mongoose.connection.readyState !== 1) {
+      console.error('MongoDB not connected. Current state:', mongoose.connection.readyState);
+      return res.status(500).json({ 
+        message: 'Database connection error', 
+        error: 'MongoDB not connected' 
+      });
+    }
+    
+    const existingUser = await User.findOne({ username }).maxTimeMS(10000);
     if (existingUser) {
       console.log('Username already exists');
       return res.status(400).json({ message: 'Username already exists' });
@@ -92,8 +103,17 @@ const login = async (req, res) => {
       return res.status(400).json({ message: 'Username and password are required' });
     }
 
+    // Check MongoDB connection before proceeding
+    if (mongoose.connection.readyState !== 1) {
+      console.error('MongoDB not connected. Current state:', mongoose.connection.readyState);
+      return res.status(500).json({ 
+        message: 'Database connection error', 
+        error: 'MongoDB not connected' 
+      });
+    }
+
     // Find user
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ username }).maxTimeMS(10000);
     if (!user) {
       console.log('User not found');
       return res.status(401).json({ message: 'Invalid credentials' });
