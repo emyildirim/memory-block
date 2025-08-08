@@ -79,7 +79,6 @@ if (!process.env.MONGODB_URI) {
     serverSelectionTimeoutMS: 30000, // Increased from 5000ms
     socketTimeoutMS: 45000,
     connectTimeoutMS: 60000,
-    bufferMaxEntries: 0, // Disable mongoose buffering
     bufferCommands: false, // Disable mongoose buffering
     maxPoolSize: 10, // Maintain up to 10 socket connections
     retryWrites: true,
