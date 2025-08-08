@@ -23,18 +23,9 @@ console.log('Environment:', {
   CORS_ORIGIN: process.env.CORS_ORIGIN
 });
 
-// CORS config (supports multiple origins via comma-separated CORS_ORIGIN)
-const allowedOrigins = (process.env.CORS_ORIGIN || 'https://www.memoryblock.org')
-  .split(',')
-  .map((o) => o.trim())
-  .filter(Boolean);
-
+// CORS config
 const corsOptions = {
-  origin: function(origin, callback) {
-    if (!origin) return callback(null, true); // allow non-browser or same-origin requests
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error('Not allowed by CORS'));
-  },
+  origin: process.env.CORS_ORIGIN || ['https://www.memoryblock.org', 'https://memoryblock.org', 'http://localhost:3000', 'http://localhost:5173'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
@@ -57,13 +48,15 @@ app.use((req, res, next) => {
 
 // CORS fallback headers (ensure these are set before routes)
 app.use((req, res, next) => {
-  const requestOrigin = req.headers.origin;
-  const allowOriginHeader = allowedOrigins.includes(requestOrigin)
-    ? requestOrigin
-    : (allowedOrigins[0] || '');
-  if (allowOriginHeader) {
-    res.header('Access-Control-Allow-Origin', allowOriginHeader);
+  const allowedOrigins = process.env.CORS_ORIGIN ? 
+    (Array.isArray(process.env.CORS_ORIGIN) ? process.env.CORS_ORIGIN : [process.env.CORS_ORIGIN]) : 
+    ['https://www.memoryblock.org', 'https://memoryblock.org', 'http://localhost:3000', 'http://localhost:5173'];
+  
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
   }
+  
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Credentials', true);
@@ -78,7 +71,12 @@ if (!process.env.MONGODB_URI) {
   // On Vercel, this might just crash the build or cold start, but doesn't halt the process.
   // Consider a more graceful error handling for production if no URI.
 } else {
-  mongoose.connect(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 5000, socketTimeoutMS: 45000 })
+  mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000
+  })
   .then(() => console.log('✅ MongoDB connected'))
   .catch(err => {
     console.error('❌ MongoDB connection failed:', err.message);
