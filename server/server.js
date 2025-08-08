@@ -43,6 +43,8 @@ app.use(express.urlencoded({ extended: true }));
 // Request logger
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
+  console.log('Headers:', req.headers);
+  console.log('Body:', req.body);
   next();
 });
 
@@ -91,6 +93,11 @@ app.use('/api/auth', authRoutes);
 app.use('/api/memories', memoryRoutes);
 app.use('/api/user', userRoutes);
 
+// Add explicit auth routes for debugging
+app.use('/auth', authRoutes);
+app.use('/memories', memoryRoutes);
+app.use('/user', userRoutes);
+
 // Health check
 app.get('/api/health', (req, res) => {
   const mongoState = mongoose.connection.readyState;
@@ -115,8 +122,18 @@ app.get('/api/health', (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     message: 'Memory Blocks API',
-    docs: '/api/health'
+    docs: '/api/health',
+    availableRoutes: ['/api/auth/register', '/api/auth/login', '/api/health']
   });
+});
+
+// Test route
+app.get('/test', (req, res) => {
+  res.json({ message: 'Server is working!' });
+});
+
+app.post('/api/test', (req, res) => {
+  res.json({ message: 'POST endpoint working!', body: req.body });
 });
 
 // Error handling middleware (keep at the end)
