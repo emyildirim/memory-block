@@ -23,9 +23,18 @@ console.log('Environment:', {
   CORS_ORIGIN: process.env.CORS_ORIGIN
 });
 
-// CORS config
+// CORS config (supports multiple origins via comma-separated CORS_ORIGIN)
+const allowedOrigins = (process.env.CORS_ORIGIN || 'https://www.memoryblock.org')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || 'https://www.memoryblock.org',
+  origin: function(origin, callback) {
+    if (!origin) return callback(null, true); // allow non-browser or same-origin requests
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
@@ -48,7 +57,13 @@ app.use((req, res, next) => {
 
 // CORS fallback headers (ensure these are set before routes)
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || 'https://www.memoryblock.org');
+  const requestOrigin = req.headers.origin;
+  const allowOriginHeader = allowedOrigins.includes(requestOrigin)
+    ? requestOrigin
+    : (allowedOrigins[0] || '');
+  if (allowOriginHeader) {
+    res.header('Access-Control-Allow-Origin', allowOriginHeader);
+  }
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Credentials', true);
@@ -63,12 +78,7 @@ if (!process.env.MONGODB_URI) {
   // On Vercel, this might just crash the build or cold start, but doesn't halt the process.
   // Consider a more graceful error handling for production if no URI.
 } else {
-  mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000
-  })
+  mongoose.connect(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 5000, socketTimeoutMS: 45000 })
   .then(() => console.log('✅ MongoDB connected'))
   .catch(err => {
     console.error('❌ MongoDB connection failed:', err.message);
