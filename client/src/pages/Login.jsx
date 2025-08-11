@@ -86,24 +86,23 @@ const Login = () => {
         backgroundImage: `url(${getBackgroundPattern()})`,
         backgroundRepeat: 'repeat',
         backgroundSize: 'auto',
-        backgroundColor: '#f9fafb'
+        backgroundColor: 'var(--bg-secondary)'
       }}
     >
       {/* Overlay for better readability */}
-      {/* Overlay for better readability - adjust opacity value (0-100) to change background transparency */}
-      <div className="absolute inset-0 bg-white bg-opacity-75"></div>
+      <div className="absolute inset-0" style={{ backgroundColor: 'var(--bg-secondary)', opacity: 0.95 }}></div>
       
       <div className="relative z-10 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-lg rounded-lg sm:px-10">
+        <div className="memory-card py-8 px-4 shadow-lg rounded-lg sm:px-10">
           {/* Logo and title */}
           <div className="flex justify-center mb-6">
             <div className="flex items-center space-x-3">
               <Logo theme="light" className="w-14 h-14 md:w-16 md:h-16" />
               <div className="flex flex-col">
-                <h1 className="text-3xl font-bold text-gray-900 leading-tight">
+                <h1 className="text-3xl font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>
                   Memory Blocks
                 </h1>
-                <span className="text-base text-gray-600">
+                <span className="text-base" style={{ color: 'var(--text-secondary)' }}>
                   Your Personal Knowledge Base
                 </span>
               </div>
@@ -111,15 +110,16 @@ const Login = () => {
           </div>
           
           {/* Sign in heading */}
-          <div className="mb-6 border-b pb-4">
-            <h2 className="text-center text-lg font-semibold text-gray-900">
+          <div className="mb-6 pb-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
+            <h2 className="text-center text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
               Sign in to your account
             </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
+            <p className="mt-2 text-center text-sm" style={{ color: 'var(--text-secondary)' }}>
               Or{' '}
               <Link
                 to="/register"
-                className="font-medium text-blue-600 hover:text-blue-500"
+                className="font-medium hover:opacity-80 transition-opacity"
+                style={{ color: 'var(--accent-color)' }}
               >
                 create a new account
               </Link>
@@ -134,7 +134,7 @@ const Login = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="username" className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                 Username
               </label>
               <div className="mt-1">
@@ -145,14 +145,21 @@ const Login = () => {
                   required
                   value={formData.username}
                   onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 sm:text-sm transition-all"
+                  style={{
+                    backgroundColor: 'var(--bg-primary)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-primary)',
+                    focusRingColor: 'var(--accent-color)',
+                    borderColor: 'var(--border-color)'
+                  }}
                   placeholder="Enter your username"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                 Password
               </label>
               <div className="mt-1">
@@ -163,7 +170,14 @@ const Login = () => {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 sm:text-sm transition-all"
+                  style={{
+                    backgroundColor: 'var(--bg-primary)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-primary)',
+                    focusRingColor: 'var(--accent-color)',
+                    borderColor: 'var(--border-color)'
+                  }}
                   placeholder="Enter your password"
                 />
               </div>
@@ -173,7 +187,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                className="btn-primary w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50"
               >
                 {loading ? 'Signing in...' : 'Sign in'}
               </button>

@@ -67,30 +67,79 @@ app.use((req, res, next) => {
   next();
 });
 
-// --- MongoDB connect (This will run when server.js is imported/built by Vercel) ---
-if (!process.env.MONGODB_URI) {
-  console.error('❌ MONGODB_URI is not set!');
-  // On Vercel, this might just crash the build or cold start, but doesn't halt the process.
-  // Consider a more graceful error handling for production if no URI.
-} else {
-  mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 30000, // Increased from 5000ms
-    socketTimeoutMS: 45000,
-    connectTimeoutMS: 60000,
-    bufferCommands: false, // Disable mongoose buffering
-    maxPoolSize: 10, // Maintain up to 10 socket connections
-    retryWrites: true,
-    w: 'majority'
-  })
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch(err => {
+// --- MongoDB connect (Optimized for Vercel serverless) ---
+let isConnected = false;
+
+const connectDB = async () => {
+  if (isConnected) {
+    console.log('✅ Using existing MongoDB connection');
+    return;
+  }
+
+  if (!process.env.MONGODB_URI) {
+    console.error('❌ MONGODB_URI is not set!');
+    throw new Error('MONGODB_URI environment variable is required');
+  }
+
+  try {
+    console.log('🔄 Connecting to MongoDB...');
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000, // Reduced for faster serverless startup
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 10000, // Reduced for serverless
+      bufferCommands: false, // Disable mongoose buffering
+      maxPoolSize: 1, // Reduced for serverless - single connection
+      retryWrites: true,
+      w: 'majority'
+    });
+    
+    isConnected = true;
+    console.log('✅ MongoDB connected successfully');
+  } catch (err) {
     console.error('❌ MongoDB connection failed:', err.message);
-    console.error(err.stack);
-    // Vercel will log this error and might mark the deployment as failed on subsequent requests.
-  });
-}
+    console.error('Full error:', err);
+    throw err;
+  }
+};
+
+// Initialize connection (but don't block app startup)
+connectDB().catch(err => {
+  console.error('❌ Initial MongoDB connection failed:', err.message);
+});
+
+// Handle connection events
+mongoose.connection.on('connected', () => {
+  isConnected = true;
+  console.log('✅ Mongoose connected to MongoDB');
+});
+
+mongoose.connection.on('error', (err) => {
+  isConnected = false;
+  console.error('❌ Mongoose connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  isConnected = false;
+  console.log('⚠️ Mongoose disconnected');
+});
+
+// Middleware to ensure DB connection before handling requests
+app.use(async (req, res, next) => {
+  if (!isConnected && mongoose.connection.readyState !== 1) {
+    try {
+      await connectDB();
+    } catch (error) {
+      console.error('❌ Database connection failed on request:', error.message);
+      return res.status(500).json({ 
+        error: 'Database connection failed', 
+        message: 'Please try again in a moment'
+      });
+    }
+  }
+  next();
+});
 
 // Setup routes *after* connection logic (synchronously for Vercel export)
 // These routes are attached to 'app' immediately when server.js is processed
@@ -110,10 +159,17 @@ app.get('/api/health', async (req, res) => {
 
   let dbTest = null;
   try {
-    if (mongoState === 1) {
+    // Ensure connection before testing
+    if (!isConnected && mongoState !== 1) {
+      await connectDB();
+    }
+    
+    if (mongoose.connection.readyState === 1) {
       // Test actual database operation
       await mongoose.connection.db.admin().ping();
       dbTest = 'Database ping successful';
+    } else {
+      dbTest = 'Database not connected';
     }
   } catch (error) {
     dbTest = `Database ping failed: ${error.message}`;
@@ -123,13 +179,15 @@ app.get('/api/health', async (req, res) => {
     message: 'Memory Blocks API is running',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
+    vercel: !!process.env.VERCEL,
     cors: {
       origin: process.env.CORS_ORIGIN || 'https://www.memoryblock.org'
     },
     mongodb: {
-      connected: mongoState === 1,
+      connected: mongoState === 1 && isConnected,
       state: mongoState,
       stateText: mongoStateText,
+      isConnectedFlag: isConnected,
       uri: process.env.MONGODB_URI ? 'Set (hidden)' : 'Not set',
       test: dbTest
     }
