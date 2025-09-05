@@ -3,48 +3,86 @@ import axios from 'axios';
 // API base URL - will use environment variable in production if available
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
-console.log('API Base URL:', API_BASE_URL); // Debug the API URL
+// Only log in development
+if (import.meta.env.DEV) {
+  console.log('API Base URL:', API_BASE_URL);
+}
 
-// Create axios instance
+// Create axios instance with optimized configuration
 const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 30000, // 30 second timeout
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: false, // Set to true if using cookies for auth
+  withCredentials: false,
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token and performance tracking
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    console.log(`Request to: ${config.url}`); // Debug request URL
+    
+    // Add request timestamp for performance monitoring
+    config.metadata = { startTime: new Date() };
+    
+    // Only log in development
+    if (import.meta.env.DEV) {
+      console.log(`Request to: ${config.url}`);
+    }
+    
     return config;
   },
   (error) => {
-    console.error('Request error:', error);
+    if (import.meta.env.DEV) {
+      console.error('Request error:', error);
+    }
     return Promise.reject(error);
   }
 );
 
-// Response interceptor to handle errors
+// Response interceptor with retry logic and performance monitoring
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error('Response error:', error);
+  (response) => {
+    // Log performance metrics in development
+    if (import.meta.env.DEV && response.config.metadata) {
+      const endTime = new Date();
+      const duration = endTime - response.config.metadata.startTime;
+      console.log(`Request to ${response.config.url} took ${duration}ms`);
+    }
+    return response;
+  },
+  async (error) => {
+    const originalRequest = error.config;
     
-    // Log more details about the error
-    if (error.response) {
-      console.log('Error status:', error.response.status);
-      console.log('Error data:', error.response.data);
-    } else if (error.request) {
-      console.log('No response received:', error.request);
+    // Retry logic for network errors
+    if (!originalRequest._retry && error.code === 'NETWORK_ERROR') {
+      originalRequest._retry = true;
+      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
+      
+      if (originalRequest._retryCount <= 3) {
+        // Exponential backoff
+        const delay = Math.pow(2, originalRequest._retryCount) * 1000;
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return api(originalRequest);
+      }
     }
     
-    // Don't redirect on 401 for login/register endpoints
+    // Only log detailed errors in development
+    if (import.meta.env.DEV) {
+      console.error('Response error:', error);
+      if (error.response) {
+        console.log('Error status:', error.response.status);
+        console.log('Error data:', error.response.data);
+      } else if (error.request) {
+        console.log('No response received:', error.request);
+      }
+    }
+    
+    // Handle authentication errors
     if (error.response?.status === 401 && 
         !error.config.url.includes('/auth/login') && 
         !error.config.url.includes('/auth/register')) {
@@ -52,6 +90,7 @@ api.interceptors.response.use(
       localStorage.removeItem('user');
       window.location.href = '/login';
     }
+    
     return Promise.reject(error);
   }
 );

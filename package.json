@@ -1,7 +1,7 @@
 {
-  "name": "memory-app",
+  "name": "memory-blocks",
   "version": "1.0.0",
-  "description": "A memory listing website with JWT authentication",
+  "description": "A full-stack memory listing website built with the MERN stack featuring JWT authentication, search functionality, and CSV export capabilities",
   "main": "server/server.js",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",
@@ -9,12 +9,39 @@
     "client": "cd client && npm run dev",
     "install-server": "cd server && npm install",
     "install-client": "cd client && npm install",
-    "install-all": "npm run install-server && npm run install-client"
+    "install-all": "npm run install-server && npm run install-client",
+    "build": "cd client && npm run build && cd ../server && npm run build",
+    "build:client": "cd client && npm run build:prod",
+    "build:server": "cd server && npm run build",
+    "start": "cd server && npm start",
+    "deploy:client": "cd client && npm run build:prod && vercel --prod",
+    "deploy:server": "cd server && vercel --prod",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "test": "echo \"Tests not implemented yet\" && exit 0",
+    "lint": "cd client && npm run lint",
+    "clean": "rm -rf client/dist server/dist node_modules client/node_modules server/node_modules"
   },
-  "keywords": ["memory", "mern", "jwt", "authentication"],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "memory",
+    "knowledge-management", 
+    "mern",
+    "react",
+    "nodejs",
+    "mongodb",
+    "express",
+    "jwt",
+    "authentication"
+  ],
+  "author": "Memory Blocks Team",
+  "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
   }
 } 

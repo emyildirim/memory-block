@@ -2,14 +2,59 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="public/memory-block-icon.png" />
-    <link rel="apple-touch-icon" href="public/memory-block-icon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Memory Blocks</title>
+    <link rel="icon" type="image/png" href="/memory-block-icon.png" />
+    <link rel="apple-touch-icon" href="/memory-block-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    
+    <!-- Primary Meta Tags -->
+    <title>Memory Blocks - Personal Knowledge Management</title>
+    <meta name="title" content="Memory Blocks - Personal Knowledge Management" />
     <meta name="description" content="Organize, search, and manage your personal knowledge with Memory Blocks - a powerful and intuitive memory management system." />
+    <meta name="keywords" content="memory, knowledge management, personal notes, organization, search" />
+    <meta name="author" content="Memory Blocks" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://memoryblock.org/" />
+    <meta property="og:title" content="Memory Blocks - Personal Knowledge Management" />
+    <meta property="og:description" content="Organize, search, and manage your personal knowledge with Memory Blocks - a powerful and intuitive memory management system." />
+    <meta property="og:image" content="/memory-block-icon.png" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://memoryblock.org/" />
+    <meta property="twitter:title" content="Memory Blocks - Personal Knowledge Management" />
+    <meta property="twitter:description" content="Organize, search, and manage your personal knowledge with Memory Blocks - a powerful and intuitive memory management system." />
+    <meta property="twitter:image" content="/memory-block-icon.png" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Memory Blocks" />
+    
+    <!-- Preconnect to improve loading performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- DNS Prefetch -->
+    <link rel="dns-prefetch" href="//api.memoryblock.org" />
+    
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Loading fallback -->
+    <noscript>
+      <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+        <h1>Memory Blocks</h1>
+        <p>Please enable JavaScript to use this application.</p>
+      </div>
+    </noscript>
   </body>
 </html> 
